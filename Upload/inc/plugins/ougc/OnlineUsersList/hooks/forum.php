@@ -30,6 +30,8 @@ declare(strict_types=1);
 
 namespace ougc\OnlineUsersList\Hooks\Forum;
 
+use function ougc\OnlineUsersList\Core\cacheGet;
+use function ougc\OnlineUsersList\Core\cacheUpdate;
 use function ougc\OnlineUsersList\Core\languageLoad;
 use function ougc\OnlineUsersList\Core\settingsGet;
 use function ougc\OnlineUsersList\Core\templatesGet;
@@ -55,10 +57,10 @@ function pre_output_page(string &$pageContents): string
         return $pageContents;
     }
 
-    $cacheData = \ougc\OnlineUsersList\Core\cacheGet();
+    $cacheData = cacheGet();
 
     if (!$cacheData || $cacheData['lastUpdate'] < TIME_NOW - (settingsGet('cacheMinutes') * 60)) {
-        $cacheData = \ougc\OnlineUsersList\Core\cacheUpdate();
+        $cacheData = cacheUpdate();
     }
 
     $totalMembers = $totalMembersAnonymous = $totalSpiders = 0;
@@ -70,40 +72,44 @@ function pre_output_page(string &$pageContents): string
 
     languageLoad();
 
-    foreach ($cacheData['users'] as $userSpiderID => $userData) {
+    foreach ($cacheData['users'] as $userData) {
+        $spiderKey = my_strtolower(str_replace('bot=', '', $userData['sid']));
+
         if (!empty($userData['uid'])) {
-            if (!empty($userData['invisible'])) {
-                ++$totalMembersAnonymous;
+            if (empty($handledUsers[$userData['uid']]) || $handledUsers[$userData['uid']] < $userData['time']) {
+                if (!empty($userData['invisible'])) {
+                    ++$totalMembersAnonymous;
+                }
+
+                ++$totalMembers;
+                if (!empty($userData['invisible']) || $mybb->usergroup['canviewwolinvis'] == 1 || $userData['uid'] == $mybb->user['uid']) {
+                    $invisibleMark = empty($userData['invisible']) ? '' : '*';
+
+                    $userName = htmlspecialchars_uni($userData['username']);
+
+                    $profileLink = build_profile_link($userName, $userData['uid']);
+
+                    $userNameFormatted = format_name(
+                        $userName,
+                        $userData['usergroup'],
+                        $userData['displaygroup']
+                    );
+
+                    $profileLinkFormatted = build_profile_link($userNameFormatted, $userData['uid']);
+
+                    $onlineMembers[] = eval(templatesGet('listUser', false));
+                }
             }
-
-            ++$totalMembers;
-            if (!empty($userData['invisible']) || $mybb->usergroup['canviewwolinvis'] == 1 || $userData['uid'] == $mybb->user['uid']) {
-                $invisibleMark = empty($userData['invisible']) ? '' : '*';
-
-                $userName = htmlspecialchars_uni($userData['username']);
-
-                $profileLink = build_profile_link($userName, $userData['uid']);
-
-                $userNameFormatted = format_name(
-                    $userName,
-                    $userData['usergroup'],
-                    $userData['displaygroup']
-                );
-
-                $profileLinkFormatted = build_profile_link($userNameFormatted, $userData['uid']);
-
-                $onlineMembers[] = eval(templatesGet('listUser', false));
-            }
-        } elseif (my_strpos($userData['sid'], 'bot=') !== false && isset($spidersCache[$userSpiderID])) {
+        } elseif (my_strpos($userData['sid'], 'bot=') !== false && isset($spidersCache[$spiderKey])) {
             if (settingsGet('orderBy') === 'username') {
-                $spiderKey = $spidersCache[$userSpiderID]['name'];
+                $spiderKey = $spidersCache[$spiderKey]['name'];
             } else {
                 $spiderKey = $userData['time'];
             }
 
             $onlineSpiders[$spiderKey] = format_name(
-                $spidersCache[$spiderKey]['name'],
-                $spidersCache[$spiderKey]['usergroup']
+                $spidersCache[$spiderKey]['name'] ?? '',
+                $spidersCache[$spiderKey]['usergroup'] ?? 0
             );
 
             ++$totalSpiders;

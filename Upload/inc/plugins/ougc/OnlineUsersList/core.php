@@ -171,7 +171,7 @@ function cacheUpdate(): array
 
     $whereClauses = ["(s.uid!='0' OR SUBSTR(s.sid,4,1)='=')", "s.time>'{$searchSpanTime}'"];
 
-    if (settingsGet('displaySpiders')) {
+    if (!settingsGet('displaySpiders')) {
         $whereClauses[] = "s.sid NOT LIKE 'bot=%'";
     }
 
@@ -185,17 +185,9 @@ function cacheUpdate(): array
     $spidersCache = $mybb->cache->read('spiders');
 
     while ($userData = $db->fetch_array($query)) {
-        $spiderKey = my_strtolower(str_replace('bot=', '', $userData['sid']));
+        unset($userData['ip']);
 
-        if (!empty($userData['uid'])) {
-            if (empty($handledUsers[$userData['uid']]) || $handledUsers[$userData['uid']] < $userData['time']) {
-                $cacheData['users'][(string)$userData['uid']] = $userData;
-
-                $handledUsers[$userData['uid']] = $userData['time'];
-            }
-        } elseif (my_strpos($userData['sid'], 'bot=') !== false && isset($spidersCache[$spiderKey])) {
-            $cacheData['users'][(string)$spiderKey] = $userData;
-        }
+        $cacheData['users'][] = $userData;
     }
 
     $mybb->cache->update('ougcOnlineUsersList', $cacheData);
