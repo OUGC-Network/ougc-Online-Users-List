@@ -1,0 +1,22 @@
+{
+  "displaySpiders": {
+    "optionscode": "yesno",
+    "value": 1
+  },
+  "orderBy": {
+    "optionscode": "select",
+    "value": "username",
+    "options": [
+      "username",
+      "activity"
+    ]
+  },
+  "cutOffMinutes": {
+    "optionscode": "numeric",
+    "value": 15
+  },
+  "cacheMinutes": {
+    "optionscode": "numeric",
+    "value": 5
+  }
+}
