@@ -82,7 +82,7 @@ function pre_output_page(string &$pageContents): string
                 }
 
                 ++$totalMembers;
-                if (!empty($userData['invisible']) || $mybb->usergroup['canviewwolinvis'] == 1 || $userData['uid'] == $mybb->user['uid']) {
+                if (empty($userData['invisible']) || $mybb->usergroup['canviewwolinvis'] == 1 || $userData['uid'] == $mybb->user['uid']) {
                     $invisibleMark = empty($userData['invisible']) ? '' : '*';
 
                     $userName = htmlspecialchars_uni($userData['username']);
@@ -102,14 +102,14 @@ function pre_output_page(string &$pageContents): string
             }
         } elseif (my_strpos($userData['sid'], 'bot=') !== false && isset($spidersCache[$spiderKey])) {
             if (settingsGet('orderBy') === 'username') {
-                $spiderKey = $spidersCache[$spiderKey]['name'];
+                $botKey = $spidersCache[$spiderKey]['name'];
             } else {
-                $spiderKey = $userData['time'];
+                $botKey = $userData['time'];
             }
 
-            $onlineSpiders[$spiderKey] = format_name(
-                $spidersCache[$spiderKey]['name'] ?? '',
-                $spidersCache[$spiderKey]['usergroup'] ?? 0
+            $onlineSpiders[$botKey] = format_name(
+                $spidersCache[$spiderKey]['name'],
+                $spidersCache[$spiderKey]['usergroup']
             );
 
             ++$totalSpiders;
