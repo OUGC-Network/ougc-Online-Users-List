@@ -198,7 +198,7 @@ function cacheUpdate(): array
         }
     }
 
-    $mybb->cache->read('ougcOnlineUsersList', $cacheData);
+    $mybb->cache->update('ougcOnlineUsersList', $cacheData);
 
     return $cacheData;
 }
