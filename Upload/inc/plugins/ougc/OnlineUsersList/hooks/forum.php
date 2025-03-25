@@ -92,7 +92,7 @@ function pre_output_page(string &$pageContents): string
 
                 $profileLinkFormatted = build_profile_link($userNameFormatted, $userData['uid']);
 
-                $onlineMembers[] = eval(templatesGet('index_whosonline_memberbit', false));
+                $onlineMembers[] = eval(templatesGet('listUser', false));
             }
         } elseif (my_strpos($userData['sid'], 'bot=') !== false && isset($spidersCache[$userSpiderID])) {
             if (settingsGet('orderBy') === 'username') {
