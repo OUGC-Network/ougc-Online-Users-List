@@ -72,22 +72,31 @@ function pre_output_page(string &$pageContents): string
 
     languageLoad();
 
+    $currentUserID = (int)$mybb->user['uid'];
+
     foreach ($cacheData['users'] as $userData) {
         $spiderKey = my_strtolower(str_replace('bot=', '', $userData['sid']));
 
         if (!empty($userData['uid'])) {
+            $userID = (int)$userData['uid'];
+
+            if (isset($onlineMembers[$userID])) {
+                continue;
+            }
+
             if (empty($handledUsers[$userData['uid']]) || $handledUsers[$userData['uid']] < $userData['time']) {
                 if (!empty($userData['invisible'])) {
                     ++$totalMembersAnonymous;
                 }
 
                 ++$totalMembers;
-                if (empty($userData['invisible']) || $mybb->usergroup['canviewwolinvis'] == 1 || $userData['uid'] == $mybb->user['uid']) {
+
+                if (empty($userData['invisible']) || $mybb->usergroup['canviewwolinvis'] == 1 || $userID === $currentUserID) {
                     $invisibleMark = empty($userData['invisible']) ? '' : '*';
 
                     $userName = htmlspecialchars_uni($userData['username']);
 
-                    $profileLink = build_profile_link($userName, $userData['uid']);
+                    $profileLink = build_profile_link($userName, $userID);
 
                     $userNameFormatted = format_name(
                         $userName,
@@ -95,9 +104,9 @@ function pre_output_page(string &$pageContents): string
                         $userData['displaygroup']
                     );
 
-                    $profileLinkFormatted = build_profile_link($userNameFormatted, $userData['uid']);
+                    $profileLinkFormatted = build_profile_link($userNameFormatted, $userID);
 
-                    $onlineMembers[] = eval(templatesGet('listUser', false));
+                    $onlineMembers[$userID] = eval(templatesGet('listUser', false));
                 }
             }
         } elseif (my_strpos($userData['sid'], 'bot=') !== false && isset($spidersCache[$spiderKey])) {
