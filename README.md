@@ -1,3 +1,9 @@
+<p align="center">
+    <a href="" rel="noopener">
+        <img width="700" height="400" src="https://github.com/user-attachments/assets/9c1629a7-901c-45e2-9e65-8968c7047d83" alt="Project logo">
+    </a>
+</p>
+
 <h3 align="center">ougc Online Users List</h3>
 
 <div align="center">
