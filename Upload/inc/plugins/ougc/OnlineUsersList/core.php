@@ -30,17 +30,8 @@ declare(strict_types=1);
 
 namespace ougc\OnlineUsersList\Core;
 
-use MyBB;
-use MybbStuff_MyAlerts_AlertManager;
-use MybbStuff_MyAlerts_AlertTypeManager;
-use MybbStuff_MyAlerts_Entity_Alert;
-use pluginSystem;
-use postParser;
-
-use function ougc\OnlineUsersList\Hooks\Forum\myalerts_register_client_alert_formatters;
-
-use const ougc\OnlineUsersList\ROOT;
 use const TIME_NOW;
+use const ougc\OnlineUsersList\ROOT;
 
 const URL = 'online.php';
 
