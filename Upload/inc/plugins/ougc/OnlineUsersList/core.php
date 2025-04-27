@@ -168,17 +168,21 @@ function cacheUpdate(): array
 
     $query = $db->simple_select(
         "sessions s LEFT JOIN {$db->table_prefix}users u ON (s.uid=u.uid)",
-        's.sid, s.ip, s.uid, s.time, s.location, s.location1, u.username, u.invisible, u.usergroup, u.displaygroup',
+        's.sid, s.uid, s.time, s.location, s.location1, u.username, u.invisible, u.usergroup, u.displaygroup',
         implode(' AND ', $whereClauses),
         $queryOptions
     );
 
-    $spidersCache = $mybb->cache->read('spiders');
+    $handledUsers = [];
 
     while ($userData = $db->fetch_array($query)) {
-        unset($userData['ip']);
-
-        $cacheData['users'][] = $userData;
+        if (!empty($userData['uid'])) {
+            if (!isset($handledUsers[$userData['uid']]) || $handledUsers[$userData['uid']] < $userData['time']) {
+                $cacheData['users'][] = $userData;
+            }
+        } else {
+            $cacheData['users'][] = $userData;
+        }
     }
 
     $mybb->cache->update('ougcOnlineUsersList', $cacheData);

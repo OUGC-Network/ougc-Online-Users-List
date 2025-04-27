@@ -80,34 +80,28 @@ function pre_output_page(string &$pageContents): string
         if (!empty($userData['uid'])) {
             $userID = (int)$userData['uid'];
 
-            if (isset($onlineMembers[$userID])) {
-                continue;
+            if (!empty($userData['invisible'])) {
+                ++$totalMembersAnonymous;
             }
 
-            if (empty($handledUsers[$userData['uid']]) || $handledUsers[$userData['uid']] < $userData['time']) {
-                if (!empty($userData['invisible'])) {
-                    ++$totalMembersAnonymous;
-                }
+            ++$totalMembers;
 
-                ++$totalMembers;
+            if (empty($userData['invisible']) || $mybb->usergroup['canviewwolinvis'] == 1 || $userID === $currentUserID) {
+                $invisibleMark = empty($userData['invisible']) ? '' : '*';
 
-                if (empty($userData['invisible']) || $mybb->usergroup['canviewwolinvis'] == 1 || $userID === $currentUserID) {
-                    $invisibleMark = empty($userData['invisible']) ? '' : '*';
+                $userName = htmlspecialchars_uni($userData['username']);
 
-                    $userName = htmlspecialchars_uni($userData['username']);
+                $profileLink = build_profile_link($userName, $userID);
 
-                    $profileLink = build_profile_link($userName, $userID);
+                $userNameFormatted = format_name(
+                    $userName,
+                    $userData['usergroup'],
+                    $userData['displaygroup']
+                );
 
-                    $userNameFormatted = format_name(
-                        $userName,
-                        $userData['usergroup'],
-                        $userData['displaygroup']
-                    );
+                $profileLinkFormatted = build_profile_link($userNameFormatted, $userID);
 
-                    $profileLinkFormatted = build_profile_link($userNameFormatted, $userID);
-
-                    $onlineMembers[$userID] = eval(templatesGet('listUser', false));
-                }
+                $onlineMembers[] = eval(templatesGet('listUser', false));
             }
         } elseif (my_strpos($userData['sid'], 'bot=') !== false && isset($spidersCache[$spiderKey])) {
             if (settingsGet('orderBy') === 'username') {
